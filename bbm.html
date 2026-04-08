@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BBM PRO | Blood Centre - Enhanced v2.1</title>
+   
+    <link rel="stylesheet" href="bbm.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+   
+    <!-- DataTables -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css">
+   
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+   
+    <script src="bbm.js" defer></script>
+</head>
+<body>
+ <!-- LOGIN PAGE -->
+    <div id="loginPage" class="login-wrapper">
+    <ul class="circles">
+        <li></li><li></li><li></li><li></li><li></li>
+        <li></li><li></li><li></li><li></li><li></li>
+    </ul>
+   
+    <div class="login-split-card">
+        <div class="login-left">
+            <div class="logo-box"><i class="fas fa-heartbeat animate-pulse"></i></div>
+            <h1>BBM</h1>
+            <p>BLOOD BANK MANAGEMENT</p>
+        </div>
+        <div class="login-right">
+            <h2> LOGIN</h2>
+            <form id="loginForm">
+                <div class="input-field">
+                    <label>USER ID</label>
+                    <input type="text" id="u" value="admin" required>
+                </div>
+                <div class="input-field">
+                    <label>Pass-code</label>
+                    <input type="password" id="p" value="1234" required>
+                </div>
+                <button type="submit" class="btn-auth">AUTHENTICATE</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+    <!-- MAIN APP -->
+    <div id="mainApp" style="display:none;">
+        <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
+        <div class="app-container">
+            <aside class="sidebar" id="sidebar">
+                <div class="sidebar-brand"><i class="fas fa-tint"></i> BBM </div>
+                <nav>
+                    <button class="nav-item active" data-page="dashboard"><i class="fas fa-th-large"></i> Dashboard</button>
+                    <button class="nav-item" data-page="add"><i class="fas fa-plus-square"></i> Add Blood</button>
+                    <button class="nav-item" data-page="inventory"><i class="fas fa-boxes"></i> Inventory</button>
+                    <button class="nav-item" data-page="requests"><i class="fas fa-file-medical"></i> Requests</button>
+                   
+                    <button class="nav-item logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+                </nav>
+            </aside>
+
+            <main class="main-content">
+             <header class="top-bar">
+    <button class="menu-btn" onclick="toggleMenu()">☰</button>
+    <h1 id="pageTitle">Dashboard</h1>
+    <div id="userInfo" style="font-size:14px;color:#666;"></div>
+</header>
+
+                <!-- DASHBOARD -->
+           <!-- DASHBOARD -->
+            
+<section id="dashboard" class="page active">
+
+    <div class="stats-container">
+        <div class="stat-card">
+            <label>TOTAL UNITS</label>
+            <h2 id="totalUnits">0</h2>
+        </div>
+
+        <div class="stat-card danger">
+            <label>EXPIRED</label>
+            <h2 id="expiredUnits">0</h2>
+        </div>
+
+        <div class="stat-card warning">
+            <label>LOW STOCK</label>
+            <h2 id="lowStock">0</h2>
+        </div>
+
+        <div class="stat-card">
+            <label>PENDING REQUESTS</label>
+            <h2 id="pendingRequests">0</h2>
+        </div>
+    </div>
+
+    <div class="content-card">
+        <h3>Blood Group Distribution</h3>
+        <div class="chart-wrapper">
+            <canvas id="bloodChart"></canvas>
+        </div>
+    </div>
+
+</section>
+
+                <!-- ADD BLOOD - SPACIOUS -->
+                <section id="add" class="page">
+                    <div class="content-card intake-card">
+                        <div class="intake-header">
+                            <h3><i class="fas fa-plus-circle"></i> Unit Registration</h3>
+                            <div class="mode-toggle">
+                                <button id="tabManual" class="toggle-btn active" onclick="switchIntakeMode('manual')">
+                                    <i class="fas fa-keyboard"></i> Manual
+                                </button>
+                                <button id="tabScanner" class="toggle-btn" onclick="switchIntakeMode('scanner')">
+                                    <i class="fas fa-camera"></i> Scanner
+                                </button>
+                            </div>
+                        </div>
+                       
+                        <div id="scannerSection" style="display:none; margin-bottom: 35px;">
+                            <div class="scanner-container">
+                                <div id="reader"></div>
+                                <p id="scanStatus" class="scan-message">📱 Align QR/Barcode to capture Bag No.</p>
+                            </div>
+                        </div>
+
+                        <!-- DONOR INFO -->
+                        <div class="form-section">
+                            <h4><i class="fas fa-user"></i> Donor Information</h4>
+                            <div class="spacious-grid">
+                                <div class="field-group">
+                                    <label>DONOR ID/Phone</label>
+                                    <input type="text" id="donorId" placeholder="Auto-generated if empty">
+                                    <small>Phone number or existing donor ID</small>
+                                </div>
+                                <div class="field-group large">
+                                    <label> Full Name *</label>
+                                    <input type="text" id="dName" placeholder="Enter donor's full name" required >
+                                    <small>First + Last name required</small>
+                                </div>
+                         
+                                <div class="field-group">
+                                    <label>🩸 Blood Bag No. *</label>
+                                    <input type="text" id="bagNo" placeholder="BBM-YYYY-XXXX" required>
+                                    <small>Unique blood bag identifier</small>
+                                </div>
+                                <div class="field-group">
+                                    <label> Blood Group *</label>
+                                    <select id="bloodgroup" required>
+                                        <option value="">Select Group</option>
+                                        <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+                                        <option>O+</option><option>O-</option><option>AB+</option><option>AB-</option>
+                                    </select>
+                                    <small>Universal donor: O- | Universal receiver: AB+</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- VITALS -->
+                        <div class="form-section">
+                            <h4><i class="fas fa-heartbeat"></i> Vitals & Collection</h4>
+                            <div class="spacious-grid">
+                                <div class="field-group">
+                                    <label>Age/Sex</label>
+                                    <input type="text" id="ageSex" placeholder="25/M">
+                                    <small>e.g. 25/M, 32/F</small>
+                                </div>
+                                <div class="field-group">
+                                    <label> Weight</label>
+                               
+                                    <input type="number" id="weight" min="40" max="150" placeholder=" (kg)">
+                                    <small>Minimum 40kg for donation</small>
+                                </div>
+                             
+                                <div class="field-group">
+                                    <label> B.P. (mmHg)</label>
+                                    <input type="text" id="bp" placeholder="120/80">
+                                    <small>Systolic/Diastolic</small>
+                                </div>
+                               <div class="field-group">
+<label>🩸 Hemoglobin</label>
+<input type="number" id="hb" min="12" max="18" step="0.1" required placeholder=" (g/dL)">
+<small>Male: 13+, Female: 12.5+</small>
+</div>
+                                <div class="field-group full-width">
+                                    <label> Entry Date *</label>
+                                    <input type="date" id="entryDate" required>
+                                    <small>35-day shelf life from this date</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button class="btn-main btn-large" onclick="addBlood()">
+                                <i class="fas fa-save"></i> ENTER UNIT
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- INVENTORY -->
+                <section id="inventory" class="page">
+                   <div class="field-group">
+<label for="quantity">Quantity (ml)</label>
+<input type="number" id="quantity" value="450" min="50" max="1000">
+</div>
+                    <div class="content-card">
+                        <div class="header-row">
+                            <h3> Current Stock <span id="inventorySummary"></span></h3>
+                            <div>
+                                <button class="btn-export" onclick="exportToExcel()"><i class="fas fa-file-excel"></i> XLSX</button>
+                             
+                            </div>
+                        </div>
+                        <table id="inventoryTable" class="table display nowrap">
+                            <thead>
+                                <tr><th>Bag No</th><th>Donor</th><th>Group</th><th>Hb%</th><th>Expiry</th><th>Days Left</th><th>Status</th></tr>
+                            </thead>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- REQUESTS - SPACIOUS -->
+                <section id="requests" class="page">
+                    <div class="content-card">
+                        <div class="header-row">
+                            <h3><i class="fas fa-file-medical"></i> Blood Requests</h3>
+                            <button class="btn-main" onclick="checkAlerts()">
+                                <i class="fas fa-bell"></i> Check Alerts
+                            </button>
+                        </div>
+
+                        <div class="request-section">
+                            <h4><i class="fas fa-hospital-user"></i> New Request</h4>
+                            <div class="request-grid">
+                                <div class="field-group large">
+                                    <label> Patient Name *</label>
+                                    <input type="text" id="reqPatient" placeholder="Enter patient full name" required>
+                                    <small>Hospital patient identifier</small>
+                                </div>
+                                <div class="field-group">
+                                    <label>🩸 Blood Group *</label>
+                                    <select id="reqGroup" required>
+                                        <option value="">Select Group</option>
+                                        <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+                                        <option>O+</option><option>O-</option><option>AB+</option><option>AB-</option>
+                                    </select>
+                                    <small>Check patient records</small>
+                                </div>
+                                <div class="field-group">
+                                    <label> Units Required *</label>
+                                    <input type="number" id="reqUnits" min="1" max="20" required>
+                                    <small>Maximum 20 units per request</small>
+                                </div>
+                                <div class="field-group">
+                                    <label> Priority</label>
+                                    <select id="reqPriority">
+                                        <option>Normal</option><option>Urgent</option><option>Emergency</option>
+                                    </select>
+                                    <small>Emergency = immediate dispatch</small>
+                                </div>
+                                <div class="field-group full-width">
+                                    <label> Clinical Notes</label>
+                                    <textarea id="reqNotes" rows="3" placeholder="Surgery type, condition, etc..."></textarea>
+                                    <small>Additional information for matching</small>
+                                </div>
+                            </div>
+                            <div class="form-actions">
+                                <button class="btn-main btn-large" onclick="submitRequest()">
+                                    <i class="fas fa-paper-plane"></i> Submit Request
+                                </button>
+                            </div>
+                        </div>
+
+                        <h4 style="margin: 30px 0 20px 0; color: var(--blood);">📋 Pending Requests</h4>
+                        <table id="requestsTable" class="table display nowrap">
+                            <thead>
+                                <tr><th>Patient</th><th>Group</th><th>Units</th><th>Priority</th><th>Status</th><th>Date</th><th>Action</th></tr>
+                            </thead>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- REPORTS -->
+                <section id="reports" class="page">
+                    <div class="content-card">
+                        <h3>📈 Reports & Audit</h3>
+                        <div class="stats-container">
+                            <div class="stat-card"><label>Added Today</label><h2 id="addedToday">0</h2></div>
+                            <div class="stat-card"><label>Issued Today</label><h2 id="issuedToday">0</h2></div>
+                            <div class="stat-card"><label>Total Requests</label><h2 id="totalRequests">0</h2></div>
+                        </div>
+                        <table id="auditTable" class="table">
+                            <thead><tr><th>Action</th><th>Details</th><th>Time</th><th>User</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+</body>
+</html>
